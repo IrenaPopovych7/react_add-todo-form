@@ -1,4 +1,5 @@
-export default [
+
+export const todosFromServer = [
   {
     id: 1,
     title: 'delectus aut autem',

@@ -3,14 +3,18 @@ import { getAllUsers, getUserById } from '../../service/UserService';
 import { Todo } from '../../types/Todo';
 
 type Props = {
-  onSubmit: (todo: Todo) => void;
+  setVisibleTodos: (value: React.SetStateAction<Todo[]>) => void;
+  visibleTodos: Todo[];
 };
-export const TodoForm: React.FC<Props> = ({ onSubmit }) => {
+export const TodoForm: React.FC<Props> = ({
+  setVisibleTodos,
+  visibleTodos,
+}) => {
   const [title, setTitle] = useState('');
-  const [hasTitleError, setTitleError] = useState(false);
-
+  const [hasTitleError, setTitleError] = useState(true);
+  const [isTouched, setIsTouched] = useState(false);
   const [userId, setUserId] = useState(0);
-  const [hasSelectError, setSelectError] = useState(false);
+  const [hasSelectError, setSelectError] = useState(true);
 
   const resetForm = () => {
     setTitle('');
@@ -27,27 +31,36 @@ export const TodoForm: React.FC<Props> = ({ onSubmit }) => {
     setSelectError(false);
   };
 
+  const largestId = (array: Todo[]): number =>
+    array.reduce((max, item) => Math.max(max, item.id), 0);
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    setIsTouched(true);
 
     const trimmedTitle = title.trim();
 
-    setTitleError(!trimmedTitle);
-    setSelectError(!userId);
+    const hasTitleError = !trimmedTitle;
+    const hasUserError = !userId;
 
-    if (!trimmedTitle || !userId) {
+    setTitleError(hasTitleError);
+    setSelectError(hasUserError);
+
+    if (hasTitleError || hasUserError) {
       return;
     }
 
-    onSubmit({
-      id: 0,
+    const newTodo = {
+      id: largestId(visibleTodos) + 1,
       title: trimmedTitle,
       completed: false,
-      user: getUserById(userId),
       userId,
-    });
+      user: getUserById(userId),
+    };
 
+    setVisibleTodos(prev => [...(prev || []), newTodo]);
     resetForm();
+    setIsTouched(false);
   };
 
   return (
@@ -64,7 +77,9 @@ export const TodoForm: React.FC<Props> = ({ onSubmit }) => {
             onChange={handleTitleChange}
           />
         </label>
-        {hasTitleError && <span className="error">Please enter a title</span>}
+        {hasTitleError && isTouched && (
+          <span className="error">Please enter a title</span>
+        )}
       </div>
 
       <div className="field">
@@ -85,10 +100,16 @@ export const TodoForm: React.FC<Props> = ({ onSubmit }) => {
             ))}
           </select>
         </label>
-        {hasSelectError && <span className="error">Please choose a user</span>}
+        {hasSelectError && isTouched && (
+          <span className="error">Please choose a user</span>
+        )}
       </div>
 
-      <button type="submit" data-cy="submitButton">
+      <button
+        type="submit"
+        data-cy="submitButton"
+        onClick={e => handleSubmit(e)}
+      >
         Add
       </button>
     </form>
