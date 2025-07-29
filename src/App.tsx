@@ -1,7 +1,7 @@
 import './App.scss';
 
 import { useState } from 'react';
-import { todosFromServer } from './api/todos';
+import todosFromServer from './api/todos';
 import usersFromServer from './api/users';
 import { TodoForm } from './components/TodoForm/TodoForm';
 import { TodoList } from './components/TodoList';
@@ -23,9 +23,8 @@ export const App = () => {
   return (
     <div className="App">
       <h1>Add todo form</h1>
-
       <TodoForm setVisibleTodos={setVisibleTodos} visibleTodos={visibleTodos} />
-      <TodoList todos={visibleTodos} findUserById={findUserById} />
+      <TodoList todos={visibleTodos} />
     </div>
   );
 };

@@ -11,10 +11,10 @@ export const TodoForm: React.FC<Props> = ({
   visibleTodos,
 }) => {
   const [title, setTitle] = useState('');
-  const [hasTitleError, setTitleError] = useState(true);
+  const [hasTitleError, setTitleError] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
   const [userId, setUserId] = useState(0);
-  const [hasSelectError, setSelectError] = useState(true);
+  const [hasSelectError, setSelectError] = useState(false);
 
   const resetForm = () => {
     setTitle('');
@@ -22,31 +22,38 @@ export const TodoForm: React.FC<Props> = ({
   };
 
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(event.target.value);
-    setTitleError(false);
+    const value = event.target.value;
+    setTitle(value);
+    if (isTouched) setTitleError(value.trim().length === 0);
   };
 
   const handleUserChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setUserId(+event.target.value);
-    setSelectError(false);
+    const value = +event.target.value;
+    setUserId(value);
+    if (isTouched) setSelectError(value === 0);
   };
 
-  const largestId = (array: Todo[]): number =>
-    array.reduce((max, item) => Math.max(max, item.id), 0);
+  const largestId = (array: Todo[]): number => {
+    const largestIdValue =
+      array.length > 0
+        ? array.reduce((max, item) => Math.max(max, item.id), 0)
+        : 0;
+
+    return largestIdValue;
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setIsTouched(true);
 
     const trimmedTitle = title.trim();
+    const localTitleError = trimmedTitle.length === 0;
+    const localUserError = !userId;
 
-    const hasTitleError = !trimmedTitle;
-    const hasUserError = !userId;
+    setTitleError(localTitleError);
+    setSelectError(localUserError);
 
-    setTitleError(hasTitleError);
-    setSelectError(hasUserError);
-
-    if (hasTitleError || hasUserError) {
+    if (localTitleError || localUserError) {
       return;
     }
 
